@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { winstonLogger } from './common/winston.util';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as cookieParser from 'cookie-parser';
@@ -22,7 +22,7 @@ async function bootstrap() {
     preflightContinue: false,
   });
   app.use(
-    ['/docs'],
+    ['/api/docs'],
     expressBasicAuth({
       challenge: true,
       users: { [process.env.SWAGGER_USER]: process.env.SWAGGER_PWD },
@@ -36,8 +36,8 @@ async function bootstrap() {
   // .addTag('')
   .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
-
+  SwaggerModule.setup('api/docs', app, document);
+  app.useGlobalPipes(new ValidationPipe());
   // app.use(
   //   session({
   //   secret: process.env.SESSION_SECRET,

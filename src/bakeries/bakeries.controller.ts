@@ -110,9 +110,8 @@ export class BakeriesController {
     @ApiResponse({ status: 500, description: '서버에러',  })  
     @Get('tags_with_rating')
     @UseGuards(OptionalJwtAuthGuard)
-    async findByTagsWithRating(@Query('search') search: string,@Query('tags') tags: string, @Query('perPage') perPage:number,@Query('page') page: number, @Query('order') order: string, ): Promise<Bakery[]> {
-        const tagList = tags.split(',');
-        return await this.bakeryService.findBakeryByTagsWithRating(search,tagList,page,perPage,order);
+    async findByTagsWithRating(@Query() searchDto: SearchDto, @UserData() user:User ): Promise<Bakery[]> {
+        return await this.bakeryService.findBakeryByTagsWithRating(searchDto,user?._id);
     }
 
     @ApiOperation({ 
@@ -155,9 +154,8 @@ export class BakeriesController {
     @ApiResponse({ status: 500, description: '서버에러',  })  
     @Get('tags_with_reviews')
     @UseGuards(OptionalJwtAuthGuard)
-    async findByTagsWithCount(@Query('search') search: string,@Query('tags') tags: string, @Query('perPage') perPage:number,@Query('page') page: number, @Query('order') order: string, ): Promise<Bakery[]> {
-        const tagList = tags.split(',');
-        return await this.bakeryService.findBakeryByTagsWithRating(search,tagList,page,perPage,order);
+    async findByTagsWithCount(@Query() searchDto: SearchDto, @UserData() user:User): Promise<Bakery[]> {
+        return await this.bakeryService.findBakeryByTagsWithReviewCount(searchDto,user?._id);
     }
 
     @Post()

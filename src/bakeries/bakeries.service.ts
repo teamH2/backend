@@ -179,42 +179,12 @@ export class BakeriesService {
     }
 
 
-    async findBakeryByTagsWithRating(search:string,tags: string[], page: number, limit: number, order : string, userId?:string): Promise<Bakery[]> {
-        const skipCount = (page - 1) * limit;
-        const sort = order==='desc'? -1 : 1;
-        const bakery = await this.bakeryModel.find(
-        {
-            $and: [
-                { $search: { $text: {query:search, path:['name','address'] }, $language: 'ko', $caseSensitive: false }},
-                { tags: { $all: tags } },
-        ],
-        },
-        // { score: { $meta: 'textScore' } } 
-        )
-        .sort({ rating: sort })
-        .populate('likes')
-        .skip(skipCount)
-        .limit(limit).exec();
-        return bakery;
+    async findBakeryByTagsWithRating(searchdto :SearchDto, userId?:string): Promise<Bakery[]> {
+        return await this.searchBakeriesByKeyword(searchdto, userId,'rating')
     }
 
-    async findBakeryByTagsWithReviewCount(search:string,tags: string[], page: number, limit: number, order : string, userId?:string): Promise<Bakery[]> {
-        const skipCount = (page - 1) * limit;
-        const sort = order==='desc'? -1 : 1;
-        // const tagList = tags.split(',');
-        return await this.bakeryModel.find(
-        {
-            $and: [
-                { $text: { $search: search } },
-                { tags: { $all: tags } },
-            ],
-        },
-        { score: { $meta: 'textScore' } } 
-        )
-        .sort({ score: { $meta: 'textScore' }, reviewCount: sort })
-        .populate('likes')
-        .skip(skipCount)
-        .limit(limit).exec();
+    async findBakeryByTagsWithReviewCount(searchdto :SearchDto, userId?:string): Promise<Bakery[]> {
+        return await this.searchBakeriesByKeyword(searchdto, userId,'reviewCount')
     }
 
     async findBakeryByTagsWithName(searchdto :SearchDto, userId?:string): Promise<Bakery[]> {
@@ -260,41 +230,28 @@ export class BakeriesService {
     }
     
     private async searchBakeriesByKeyword(searchdto: SearchDto,userId:string,sorting:string): Promise<Bakery[]> {
+        if(!searchdto.tags){
+            searchdto.tags = "";
+        }
         const skipCount = (searchdto.page - 1) * searchdto.limit;
         const sort = searchdto.order==='desc'? -1 : 1;
         const tagList = searchdto.tags.split(',');
-        let findCondition = {};
-        // let textSearchCondition = {};
-        let tagSearchCondition = null;
-        let scoreCondition = {};
-        let sortConditon = {};
-        console.log(tagList)
-        console.log(await this.bakeryModel.listIndexes() )
-        console.log(searchdto.search)
-        if(searchdto.tags.length > 0){
-            findCondition = { tags: { $all: tagList } };
+        const regex = new RegExp(searchdto.search, 'i');
+
+        let findCondition = {} as any;
+        if(searchdto.search){
+            findCondition.$or =  [{ name: regex }, { address: regex },]
         }
-        if(searchdto.search.length > 0){
-            findCondition = { $text: { $search: searchdto.search }, $language: 'ko', $caseSensitive: false  };
-            scoreCondition = { score: { $meta: 'textScore' } };
-            sortConditon = { score: { $meta: 'textScore' }, [sorting]: sort };
+        if(tagList[0]!==""){
+            findCondition.$and =  [{ tags: { $all: tagList } }] ;
         }
 
-        const bakeries = await this.bakeryModel.find(
-            // findCondition,
-            // {
-                // $or: [
-                   { $gt: 1,$text: { $search:searchdto.search}, $language: 'korean',  } ,
-                //   { addressScore: { $gt: 1, $text: {$search:searchdto.search}, } },
-                // ],
-            //   },
-            scoreCondition
-        )
-        .sort(sortConditon)
+        const bakeries = await this.bakeryModel          
+        .find(findCondition)
+        .sort({ [sorting] : sort})
         .populate('likes')
         .skip(skipCount)
         .limit(searchdto.limit).exec();
-
         if(!userId){
             return bakeries;
         }
@@ -313,7 +270,7 @@ export class BakeriesService {
         return await this.bakeryModel.find().exec();
     }
     
-    
+    //haversine formula
     private getDistanceFromLatLonInKm(
         lat1: number,
         lon1: number,
