@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    container_name: ${MONGO_CONTAINER}
+    volumes:
+      - ./mongodb_data_container:/data/db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - TZ=Asia/Seoul
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+  # nest:
+  #   container_name: 'nest'
+  #   build:
+  #     context: .
+  #     target: development
+  #   volumes:
+  #     - /Users/chanwoolee/logs:/usr/src/app/logs
+  #     # - /usr/src/app/node_modules
+  #   ports:
+  #     - ${SERVER_PORT}:${SERVER_PORT}
+  #     - 9229:9229
+  #   command: npm run start:debug
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - mongo
