@@ -77,10 +77,12 @@ export class LikeService {
             if(existingLike.bakery.toString() !== bakeryId){
                 throw new HttpException('User has not liked this bakery', 400);
             }
-            const bakeryUpdate = await this.bakeryModel.findByIdAndUpdate(bakeryId, { $inc: { like: -1 } },{ $pull: {likes:existingLike._id} }).exec();
+            const bakeryUpdate = await this.bakeryModel.findByIdAndUpdate(
+                bakeryId, { $inc: { like: -1 } },
+                { $pull: {likes:existingLike._id} })
+                .exec();
             if(bakeryUpdate.like<0){
                 await this.bakeryModel.findByIdAndUpdate(bakeryId, { like: 0 }).exec();
-                throw new HttpException('서버에러',500);
             }
             await this.userModel.findByIdAndUpdate(userId, { $pull: { likes: existingLike._id } }).exec();
             return await this.likeModel.findOneAndDelete({ user: userId, bakery: bakeryId }).exec();

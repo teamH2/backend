@@ -139,7 +139,6 @@ export class BakeriesService {
     }
 
     async findByDistrict(district: string, userId?: string): Promise<Bakery[]> {
-        console.log(userId)
         const bakeries = await this.bakeryModel.find
         ({ address: { $regex: district } })
         .populate('likes')
@@ -147,12 +146,10 @@ export class BakeriesService {
         if(!userId){
             return bakeries;
         }
-        console.log(bakeries)
         return bakeries.map(bakery => {
             const like = bakery.likes.find(like => {
                 return like.user.toString() === userId
             });
-            console.log(like,"ss")
             return {
                 ...bakery.toObject(),
                 isLiked: like ? true : false,
