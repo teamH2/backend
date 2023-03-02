@@ -17,7 +17,6 @@ export class LikeService {
         @InjectModel(Bakery.name) private bakeryModel: Model<BakeryDocument>,
         @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
         @InjectModel(Like.name) private likeModel: Model<LikeDocument>,
-        private readonly usersService: UsersService,
     ) {}
 
 
@@ -69,12 +68,6 @@ export class LikeService {
         try{
             const existingLike = await this.likeModel.findOne({ user: userId, bakery: bakeryId });
             if (!existingLike) {
-                throw new HttpException('User has not liked this bakery', 400);
-            }
-            if(existingLike.user.toString() !== userId){
-                throw new HttpException('User has not liked this bakery', 400);
-            }
-            if(existingLike.bakery.toString() !== bakeryId){
                 throw new HttpException('User has not liked this bakery', 400);
             }
             const bakeryUpdate = await this.bakeryModel.findByIdAndUpdate(
