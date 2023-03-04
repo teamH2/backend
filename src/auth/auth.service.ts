@@ -187,21 +187,18 @@ export class AuthService {
     const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(user);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     const users = await this.userModel.findByIdAndUpdate(user._id, { refreshToken : hashedRefreshToken });
-    const { reviewCount, bookmark, visitied, ...result } = users.toObject();
+    const { reviewCount, visitied, ...result } = users.toObject();
     res.cookie(this.configService.get('JWT_NAME'), accessToken, accessOption);
     res.cookie(this.configService.get('REFRESH_TOKEN_NAME'), refreshToken, refreshOption);
     logger.log(`${user.platform} ${user.email} is logged in`);
     return res.status(201).send(result).end();
   }
+
   async refreshToken( user: any, req ,res: Response ) : Promise< any >{
     try{
       if(user){
           const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(user);
           res.cookie(this.configService.get('JWT_NAME'), accessToken,accessOption);
-          // if(req.header['redirectedFrom'] !== undefined){
-          //   logger.verbose(`${user.id} : access token refreshed`);
-          //   return res.status(201).redirect(HttpStatus.PERMANENT_REDIRECT,req.header['redirectedFrom']);
-          // }
           return res.status(201).end();
       }else{
           throw new UnauthorizedException('you are not logged in');

@@ -37,9 +37,6 @@ export class User {
     deletedAt?: Date;
 
     @Prop()
-    bookmark?: Bakery[]
-
-    @Prop()
     reviewCount?: number
 
     @Prop()
