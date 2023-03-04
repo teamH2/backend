@@ -48,13 +48,7 @@ export class Bakery {
     
     @Prop({ type: [String], index: true }) // tags 필드에 대한 색인 생성
     tags: string[];
-  
-    // @Prop({ type: Number, index: 'text' }) // name 필드에 대한 텍스트 검색 색인 생성
-    // nameScore: number;
-  
-    // @Prop({ type: Number, index: 'text' }) // address 필드에 대한 텍스트 검색 색인 생성
-    // addressScore: number;
-    
+
     @Prop()
     thumbnail: string;
     
